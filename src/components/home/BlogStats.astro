@@ -1,5 +1,5 @@
 ---
-import { getNotionPageContent } from '@/lib/notion'
+import { getPageContent } from '@/lib/content-source'
 import { getBlogCollection, getBlogCollectionEn, sortMDByDate } from '@/utils/server'
 import { Icon } from '@/components/user'
 import getReadingTime from '@/utils/reading-time'
@@ -25,7 +25,7 @@ const lastUpdated = sortedPosts.length > 0 ?
 const totalWords = (
   await Promise.all(
     sortedPosts.map(async (post) => {
-      const markdown = await getNotionPageContent(post.sourcePageId)
+      const markdown = await getPageContent(post.source)
       return getReadingTime(markdown).words
     })
   )

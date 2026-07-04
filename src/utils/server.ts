@@ -1,12 +1,12 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
 
 import {
-  getNotionNotes,
-  getNotionPosts,
-  type NotionLang,
-  type NotionNoteEntry,
-  type NotionPost
-} from '../lib/notion'
+  getNotes,
+  getPosts,
+  type ContentLang,
+  type ContentNoteEntry,
+  type ContentPost
+} from '../lib/content-source'
 
 export interface BlogPostData {
   title: string
@@ -23,7 +23,7 @@ export interface BlogPostData {
   }
   tags: string[]
   category?: string
-  language: NotionLang
+  language: ContentLang
   draft: boolean
   comment: boolean
   pixivLink?: string
@@ -32,18 +32,19 @@ export interface BlogPostData {
 export interface BlogPostEntry {
   id: string
   data: BlogPostData
-  notionId: string
-  sourcePageId: string
+  contentId: string
+  source: string
 }
 
 export interface NoteEntry {
   id: string
   title: string
-  lang: NotionLang
+  lang: ContentLang
   path: string
   fullSlug: string
-  notionId: string
-  sourcePageId: string
+  contentId: string
+  source: string
+  category?: string
   segments: string[]
 }
 
@@ -66,11 +67,20 @@ export interface FlatNoteTreeNode {
 
 export const prod = import.meta.env.PROD
 
-function toBlogPostEntry(post: NotionPost): BlogPostEntry {
+function toBlogPostEntry(post: ContentPost): BlogPostEntry {
+  const heroImage = post.cover
+    ? {
+        src: post.cover,
+        alt: post.title,
+        width: 1200,
+        height: 630
+      }
+    : undefined
+
   return {
     id: post.slug,
-    notionId: post.notionId,
-    sourcePageId: post.sourcePageId,
+    contentId: post.id,
+    source: post.source,
     data: {
       title: post.title,
       description: post.title,
@@ -79,13 +89,14 @@ function toBlogPostEntry(post: NotionPost): BlogPostEntry {
       category: post.category,
       language: post.lang,
       draft: false,
-      comment: true
+      comment: true,
+      heroImage
     }
   }
 }
 
-async function getPostsByLang(lang: NotionLang): Promise<BlogPostEntry[]> {
-  return (await getNotionPosts())
+async function getPostsByLang(lang: ContentLang): Promise<BlogPostEntry[]> {
+  return (await getPosts())
     .filter((post) => post.lang === lang)
     .map(toBlogPostEntry)
 }
@@ -115,7 +126,7 @@ function humanizeNoteSegment(segment: string) {
     : spaced
 }
 
-function toNoteEntry(note: NotionNoteEntry): NoteEntry {
+function toNoteEntry(note: ContentNoteEntry): NoteEntry {
   const path = note.slug
 
   return {
@@ -124,14 +135,15 @@ function toNoteEntry(note: NotionNoteEntry): NoteEntry {
     lang: note.lang,
     path,
     fullSlug: note.slug,
-    notionId: note.notionId,
-    sourcePageId: note.sourcePageId,
+    contentId: note.id,
+    source: note.source,
+    category: note.category,
     segments: splitNotePath(path)
   }
 }
 
-async function getNotesByLang(lang: NotionLang): Promise<NoteEntry[]> {
-  return (await getNotionNotes())
+async function getNotesByLang(lang: ContentLang): Promise<NoteEntry[]> {
+  return (await getNotes())
     .filter((note) => note.lang === lang)
     .map(toNoteEntry)
     .sort((a, b) => a.path.localeCompare(b.path))

@@ -1,11 +1,7 @@
 import { z } from 'astro/zod'
 
-import { FriendLinksSchema } from '../schemas/links'
-
 export const IntegrationConfigSchema = () =>
   z.object({
-    links: FriendLinksSchema(),
-
     /**
      * Define whether default site search provider Pagefind is enabled.
      * Set to `false` to disable indexing your site with Pagefind.

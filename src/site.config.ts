@@ -45,7 +45,6 @@ export const theme: ThemeUserConfig = {
       { title: 'Blog', link: '/blog' },
       { title: 'Notes', link: '/notes' },
       { title: 'Projects', link: '/projects' },
-      { title: 'Links', link: '/links' },
       { title: 'About', link: '/about' }
     ]
   },
@@ -90,23 +89,11 @@ export const theme: ThemeUserConfig = {
       main: 'theme.axi404.top',
       // githubPages: '',
       // cloudflare: '',
-      // friendCircle: '',
     },
   }
 }
 
 export const integ: IntegrationUserConfig = {
-  links: {
-    logbook: [
-    ],
-    // Yourself link info
-    applyTip: [
-      { name: 'Name', val: theme.title },
-      { name: 'Desc', val: theme.description || 'Null' },
-      { name: 'Link', val: `https://${theme.personal?.domains?.main || 'example.com'}` },
-      { name: 'Avatar', val: `https://${theme.personal?.domains?.main || 'example.com'}/avatar/avatar.png` }
-    ]
-  },
   // Enable page search function
   pagefind: true,
   // Add a random quote to the footer (default on homepage footer)

@@ -11,6 +11,12 @@ interface BreadcrumbItem {
   href: string
 }
 
+interface NoteCategoryGroup {
+  category: string
+  count: number
+  hrefSegment: string
+}
+
 interface Props {
   title: string
   description: string
@@ -20,6 +26,10 @@ interface Props {
   flatTree: FlatNoteTreeNode[]
   breadcrumbs: BreadcrumbItem[]
   childNodes: NoteTreeNode[]
+  categoryGroups?: NoteCategoryGroup[]
+  uncategorizedNodes?: NoteTreeNode[]
+  indexMode?: boolean
+  childSectionTitle?: string
   headings?: MarkdownHeading[]
   html?: string
 }
@@ -33,6 +43,10 @@ const {
   flatTree,
   breadcrumbs,
   childNodes,
+  categoryGroups = [],
+  uncategorizedNodes = [],
+  indexMode = false,
+  childSectionTitle = 'Subnotes',
   headings = [],
   html
 } = Astro.props
@@ -114,18 +128,85 @@ function countDescendants(node: NoteTreeNode): number {
     <p class='mt-3 text-sm text-muted-foreground sm:text-base'>{description}</p>
   </Fragment>
 
-  {!html && (
-    <div class='not-prose rounded-2xl border border-dashed border-border bg-card/70 px-5 py-6 text-sm text-muted-foreground'>
-      This is a note directory. Pick a subnote below to continue reading.
-    </div>
-  )}
-
   {html && <Fragment set:html={html} />}
 
-  {!!childNodes.length && (
+  {indexMode && !!categoryGroups.length && (
     <section class='not-prose mt-10'>
       <div class='mb-4 flex items-center justify-between gap-3'>
-        <h2 class='text-lg font-semibold text-foreground'>Subnotes</h2>
+        <h2 class='text-lg font-semibold text-foreground'>Categories</h2>
+        <span class='text-sm text-muted-foreground'>{categoryGroups.length} groups</span>
+      </div>
+
+      <div class='grid gap-3 sm:grid-cols-2'>
+        {categoryGroups.map((group) => (
+          <a
+            href={`${basePath}/category/${group.hrefSegment}`}
+            class='group rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
+          >
+            <div class='flex items-start justify-between gap-4'>
+              <div class='min-w-0'>
+                <h3 class='truncate text-base font-semibold text-foreground transition-colors group-hover:text-primary'>
+                  {group.category}
+                </h3>
+                <p class='mt-1 text-sm text-muted-foreground'>
+                  {group.count === 1 ? '1 note' : `${group.count} notes`}
+                </p>
+              </div>
+              <Icon
+                name='chevron-down'
+                class='mt-0.5 size-4 shrink-0 -rotate-90 text-muted-foreground transition-colors group-hover:text-primary'
+              />
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {indexMode && !!uncategorizedNodes.length && (
+    <section class='not-prose mt-10'>
+      <div class='mb-4 flex items-center justify-between gap-3'>
+        <h2 class='text-lg font-semibold text-foreground'>Uncategorized</h2>
+        <span class='text-sm text-muted-foreground'>{uncategorizedNodes.length} items</span>
+      </div>
+
+      <div class='grid gap-3 sm:grid-cols-2'>
+        {uncategorizedNodes.map((node) => {
+          const descendants = countDescendants(node)
+          const subtitle = node.page
+            ? descendants > 0
+              ? `${descendants} nested notes`
+              : 'Read note'
+            : `${node.children.length} direct subnotes`
+
+          return (
+            <a
+              href={getNodeHref(node.path)}
+              class='group rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:bg-muted/50 hover:shadow-sm'
+            >
+              <div class='flex items-start justify-between gap-4'>
+                <div class='min-w-0'>
+                  <h3 class='truncate text-base font-semibold text-foreground transition-colors group-hover:text-primary'>
+                    {node.page?.title || node.title}
+                  </h3>
+                  <p class='mt-1 text-sm text-muted-foreground'>{subtitle}</p>
+                </div>
+                <Icon
+                  name='chevron-down'
+                  class='mt-0.5 size-4 shrink-0 -rotate-90 text-muted-foreground transition-colors group-hover:text-primary'
+                />
+              </div>
+            </a>
+          )
+        })}
+      </div>
+    </section>
+  )}
+
+  {!indexMode && !!childNodes.length && (
+    <section class='not-prose mt-10'>
+      <div class='mb-4 flex items-center justify-between gap-3'>
+        <h2 class='text-lg font-semibold text-foreground'>{childSectionTitle}</h2>
         <span class='text-sm text-muted-foreground'>{childNodes.length} items</span>
       </div>
 

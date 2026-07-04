@@ -196,8 +196,6 @@ export const ThemeConfigSchema = () =>
         githubPages: z.string().optional().describe('GitHub Pages domain'),
         /** Cloudflare domain */
         cloudflare: z.string().optional().describe('Cloudflare domain'),
-        /** Friend Circle domain */
-        friendCircle: z.string().optional().describe('Friend Circle domain'),
       }).optional().describe('Domain configuration')
     }).optional().describe('Personal information configuration')
   })

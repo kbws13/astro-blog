@@ -5,7 +5,7 @@
 # Gitignore template for Astro projects
 # Ignore content collection generated files
 .astro
-
+.understand-anything
 ### Vercel ###
 .vercel
 
@@ -66,10 +66,12 @@ pnpm-debug.log*
 
 # dependencies
 node_modules/
+.pnpm-store/
 
 # environment variables
 .env
 .env.production
+public/feishu-assets/
 
 # others
 .DS_Store

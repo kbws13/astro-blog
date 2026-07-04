@@ -1,0 +1,45 @@
+---
+import NotesView from '@/components/pages/NotesView.astro'
+import { buildNoteTree, flattenNoteTree, getNotesCollection } from '@/server'
+import { getNoteCategoryGroups, getNoteCategoryItems } from '@/utils/note-categories'
+
+export const prerender = true
+
+export async function getStaticPaths() {
+  const notes = await getNotesCollection()
+
+  return getNoteCategoryGroups(notes).map((group) => ({
+    params: { category: group.hrefSegment },
+    props: { category: group.category }
+  }))
+}
+
+type Props = {
+  category: string
+}
+
+const { category } = Astro.props as Props
+const notes = await getNotesCollection()
+const categoryNotes = getNoteCategoryItems(notes, category)
+const root = buildNoteTree(categoryNotes, category)
+const allRoot = buildNoteTree(notes, 'Notes')
+const flatTree = flattenNoteTree(allRoot)
+const title = category
+const description = `Browse notes in category: ${category}.`
+const breadcrumbs = [
+  { title: 'Notes', href: '/notes' },
+  { title, href: `/notes/category/${encodeURIComponent(category)}` }
+]
+---
+
+<NotesView
+  {title}
+  {description}
+  basePath='/notes'
+  currentPath={`category/${encodeURIComponent(category)}`}
+  rootTitle='NOTEBOOK'
+  {flatTree}
+  {breadcrumbs}
+  childNodes={root.children}
+  childSectionTitle='Notes'
+/>

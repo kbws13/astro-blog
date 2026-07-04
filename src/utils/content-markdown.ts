@@ -30,7 +30,7 @@ export function getDescriptionFromMarkdown(markdown: string, fallback: string): 
   return normalized.slice(0, 160) || fallback
 }
 
-export async function renderNotionMarkdown(markdown: string): Promise<{
+export async function renderContentMarkdown(markdown: string): Promise<{
   html: string
   headings: MarkdownHeading[]
 }> {

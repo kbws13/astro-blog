@@ -1,5 +1,5 @@
 ---
-import { getNotionProjects } from '@/lib/notion'
+import { getProjects } from '@/lib/content-source'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 import config from '@/site-config'
@@ -8,7 +8,7 @@ const headings = [
   { depth: 2, slug: 'projects', text: 'Projects' }
 ]
 
-const projects = (await getNotionProjects())
+const projects = (await getProjects())
   .filter((project) => project.lang === 'zh')
   .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   .map((project) => ({

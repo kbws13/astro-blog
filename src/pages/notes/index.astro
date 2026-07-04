@@ -1,24 +1,27 @@
 ---
 import type { MarkdownHeading } from 'astro'
 
-import { getNotionPageContent } from '@/lib/notion'
+import { getPageContent } from '@/lib/content-source'
 import NotesView from '@/components/pages/NotesView.astro'
 import { buildNoteTree, flattenNoteTree, getNotesCollection } from '@/server'
-import { getDescriptionFromMarkdown, renderNotionMarkdown } from '@/utils/notion-markdown'
+import { getDescriptionFromMarkdown, renderContentMarkdown } from '@/utils/content-markdown'
+import { getNoteCategoryGroups, getNotesWithoutCategory } from '@/utils/note-categories'
 
 export const prerender = true
 
 const notes = await getNotesCollection()
 const root = buildNoteTree(notes, 'Notes')
 const flatTree = flattenNoteTree(root)
+const categoryGroups = getNoteCategoryGroups(notes)
+const uncategorizedRoot = buildNoteTree(getNotesWithoutCategory(notes), 'Notes')
 
 let html: string | undefined
 let headings: MarkdownHeading[] = []
 let description = 'Browse all notes and nested notebooks.'
 
 if (root.page) {
-  const markdown = await getNotionPageContent(root.page.sourcePageId)
-  const rendered = await renderNotionMarkdown(markdown)
+  const markdown = await getPageContent(root.page.source)
+  const rendered = await renderContentMarkdown(markdown)
   html = rendered.html
   headings = rendered.headings
   description = getDescriptionFromMarkdown(markdown, root.page.title)
@@ -37,6 +40,9 @@ const breadcrumbs = [{ title, href: '/notes' }]
   {flatTree}
   {breadcrumbs}
   childNodes={root.children}
+  {categoryGroups}
+  uncategorizedNodes={uncategorizedRoot.children}
+  indexMode
   {headings}
   {html}
 />

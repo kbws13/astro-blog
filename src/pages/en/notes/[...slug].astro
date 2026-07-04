@@ -1,7 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro'
 
-import { getNotionPageContent } from '@/lib/notion'
+import { getPageContent } from '@/lib/content-source'
 import NotesView from '@/components/pages/NotesView.astro'
 import {
   buildNoteTree,
@@ -10,7 +10,7 @@ import {
   getNoteNode,
   getNotesCollectionEn
 } from '@/server'
-import { getDescriptionFromMarkdown, renderNotionMarkdown } from '@/utils/notion-markdown'
+import { getDescriptionFromMarkdown, renderContentMarkdown } from '@/utils/content-markdown'
 
 export const prerender = true
 
@@ -45,8 +45,8 @@ let headings: MarkdownHeading[] = []
 let description = `Browse notes inside ${currentNode.page?.title || currentNode.title}.`
 
 if (currentNode.page) {
-  const markdown = await getNotionPageContent(currentNode.page.sourcePageId)
-  const rendered = await renderNotionMarkdown(markdown)
+  const markdown = await getPageContent(currentNode.page.source)
+  const rendered = await renderContentMarkdown(markdown)
   html = rendered.html
   headings = rendered.headings
   description = getDescriptionFromMarkdown(markdown, currentNode.page.title)

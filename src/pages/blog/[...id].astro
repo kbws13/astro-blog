@@ -11,9 +11,9 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
 import PostLayout from '@/layouts/BlogPost.astro'
+import { getPageContent, getPosts, type ContentPost } from '@/lib/content-source'
 import mdastToString from '@/utils/mdast-util-to-string'
 import getReadingTime from '@/utils/reading-time'
-import { getNotionPageContent, getNotionPosts, type NotionPost } from '../../lib/notion'
 
 export const prerender = true
 
@@ -61,7 +61,7 @@ function getDescriptionFromMarkdown(markdown: string, fallback: string): string 
   return normalized.slice(0, 160) || fallback
 }
 
-async function renderNotionMarkdown(markdown: string): Promise<{
+async function renderContentMarkdown(markdown: string): Promise<{
   html: string
   headings: MarkdownHeading[]
   remarkPluginFrontmatter: Record<string, unknown>
@@ -118,7 +118,16 @@ async function renderNotionMarkdown(markdown: string): Promise<{
   }
 }
 
-function toRenderedPost(post: NotionPost, description: string): RenderedPost {
+function toRenderedPost(post: ContentPost, description: string): RenderedPost {
+  const heroImage = post.cover
+    ? {
+        src: post.cover,
+        alt: post.title,
+        width: 1200,
+        height: 630
+      }
+    : undefined
+
   return {
     id: post.slug,
     data: {
@@ -129,13 +138,14 @@ function toRenderedPost(post: NotionPost, description: string): RenderedPost {
       category: post.category,
       language: post.lang,
       draft: false,
-      comment: true
+      comment: true,
+      heroImage
     }
   }
 }
 
 export async function getStaticPaths() {
-  const posts = (await getNotionPosts())
+  const posts = (await getPosts())
     .filter((post) => post.lang === 'zh')
     .sort((a, b) => b.date.valueOf() - a.date.valueOf())
 
@@ -146,13 +156,13 @@ export async function getStaticPaths() {
 }
 
 type Props = {
-  post: NotionPost
-  posts: NotionPost[]
+  post: ContentPost
+  posts: ContentPost[]
 }
 
 const { post, posts } = Astro.props as Props
-const markdown = await getNotionPageContent(post.sourcePageId)
-const { html, headings, remarkPluginFrontmatter } = await renderNotionMarkdown(markdown)
+const markdown = await getPageContent(post.source)
+const { html, headings, remarkPluginFrontmatter } = await renderContentMarkdown(markdown)
 const description = getDescriptionFromMarkdown(markdown, post.title)
 
 const renderedPost = toRenderedPost(post, description)

@@ -6,16 +6,16 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 
 import config from '@/site-config'
-import { getNotionPageContent, getNotionPosts } from '@/lib/notion'
+import { getPageContent, getPosts } from '@/lib/content-source'
 
-const renderContent = async (pageId: string) => {
-  const markdown = await getNotionPageContent(pageId)
+const renderContent = async (source: string) => {
+  const markdown = await getPageContent(source)
   const file = await unified().use(remarkParse).use(remarkRehype).use(rehypeStringify).process(markdown)
   return String(file)
 }
 
 const GET = async (context: AstroGlobal) => {
-  const allPostsByDate = (await getNotionPosts())
+  const allPostsByDate = (await getPosts())
     .filter((post) => post.lang === 'zh')
     .sort((a, b) => b.date.valueOf() - a.date.valueOf())
 
@@ -31,7 +31,7 @@ const GET = async (context: AstroGlobal) => {
         title: post.title,
         pubDate: post.date,
         link: `/blog/${post.slug}`,
-        content: await renderContent(post.sourcePageId)
+        content: await renderContent(post.source)
       }))
     )
   })
