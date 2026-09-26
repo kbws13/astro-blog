@@ -3,33 +3,23 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import AlgorithmShowcase from '@/components/about/AlgorithmShowcase.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
 import { Comment } from '@/components/advanced'
-import { Button, DistributionSection, Spoiler } from '@/components/user'
+import { Spoiler } from '@/components/user'
 
 const headings = [
-  { depth: 2, slug: 'distribution', text: 'Distribution' },
   { depth: 2, slug: 'tools', text: 'Tools' },
-  { depth: 2, slug: 'copyright', text: 'Copyright' },
-  { depth: 2, slug: 'theme', text: 'Theme' }
-]
-
-const distributions = [
-  {
-    title: 'Mirror 1',
-    url: 'example.com',
-    platform: 'Vercel'
-  },
-  {
-    title: 'Mirror 2',
-    url: 'blog.example.com',
-    platform: 'Vultr'
-  }
+  { depth: 2, slug: 'theme', text: 'Theme' },
+  { depth: 2, slug: 'copyright', text: 'Copyright' }
 ]
 ---
 
 <PageLayout title='About' {headings} info='/about'>
-  <p>Empty Stack Engineer / <Spoiler>Some fun facts about you</Spoiler></p>
+  <p>Empty Stack Engineer / <Spoiler>Some fun facts about me</Spoiler></p>
   <p>
-    I am kbws, a person who enjoys writing code, developing systems, and gradually organizing thoughts into words. This website not only records completed outcomes but also documents ongoing learning, thinking, and construction. Here, you can find articles, notes, projects, as well as the technical perspective and methodology that I am gradually forming.
+    I am kbws, a person who enjoys writing code, developing systems, and
+    gradually organizing thoughts into words. This site records not only
+    finished work, but also the learning, thinking, and building still in
+    progress: here you can find articles, notes, and projects, along with the
+    technical perspective and methodology I am gradually shaping.
   </p>
   <h2 id='tools'>Tools<a class='anchor' href='#tools'>#</a></h2>
   <ToolSection
@@ -62,19 +52,32 @@ const distributions = [
       }
     ]}
   />
+  <h2 id='theme'>Theme<a class='anchor' href='#theme'>#</a></h2>
+  <p>
+    This site is built on a heavily modified version of Astro's <a
+      href='https://github.com/Axi404/Axi-Theme'>Axi-Theme</a
+    >. Articles, notes, projects, and other content no longer live in the code
+    repository — they are pulled from the Feishu Open Platform API at build time
+    to generate fully static pages (an earlier version used Notion as its data
+    source, with implementation reference to <a href='https://github.com/tangly1024/NotionNext'>NotionNext</a>).
+  </p>
   <h2 id='copyright'>Copyright<a class='anchor' href='#copyright'>#</a></h2>
   <p>
-    Unless otherwise stated, all original content and site design are licensed under the <a
+    Unless otherwise stated, all original content and the overall design of
+    this site are licensed under the <a
       href='https://creativecommons.org/licenses/by-nc-sa/4.0/'>CC BY-NC-SA 4.0</a
-    > license. This means you are free to share, copy, or adapt the work within the license scope, as
-    long as you give appropriate credit and **do not use it for commercial purposes**.
+    > license. You are free to share, copy, or adapt the work within the scope
+    of the license, as long as you credit the original author with a link back
+    and <strong>do not use it for commercial purposes</strong>.
   </p>
   <p>
-    Most blog cover images on this site are sourced from publicly available artworks on Pixiv and
-    are linked to the original (Hero Image). Other images, icons, trademarks, or materials used on
-    this site belong to their respective rights holders, regardless of whether a © or ™ is
-    explicitly shown. No copyright infringement is intended. If you believe any content on this site
-    infringes upon your rights, please contact me — I will promptly remove it.
+    Most blog cover images on this site are sourced from publicly available
+    artworks on Pixiv and are linked to the originals (Hero Image). Other
+    images, icons, trademarks, or materials used on this site belong to their
+    respective rights holders, regardless of whether a © or ™ is explicitly
+    shown — no copyright infringement is intended. If you believe any content
+    on this site infringes upon your rights, please contact me, and I will
+    promptly remove it.
   </p>
   <svg width='160' height='56' viewBox='0 0 160 56' xmlns='http://www.w3.org/2000/svg'>
     <g transform='scale(1.3333333)'>
@@ -156,10 +159,6 @@ const distributions = [
         id='path19'></path>
     </g>
   </svg>
-  <h2 id='theme'>Theme<a class='anchor' href='#theme'>#</a></h2>
-  <p>
-    This theme is based on Astro's <a href='https://github.com/Axi404/Axi-Theme'>Axi-Theme</a>, with some modifications. It has been adapted to pull remote data sources from Notion API during the build process for blog, notes, projects, and other content (this part is referenced from <a href="https://github.com/tangly1024/NotionNext">NotionNext</a>).
-  </p>
   <AlgorithmShowcase class='my-8' />
   <Comment slot='bottom' />
 </PageLayout>

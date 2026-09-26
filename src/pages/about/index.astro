@@ -3,33 +3,19 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import AlgorithmShowcase from '@/components/about/AlgorithmShowcase.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
 import { Comment } from '@/components/advanced'
-import { Button, DistributionSection, Spoiler } from '@/components/user'
+import { Spoiler } from '@/components/user'
 
 const headings = [
-  { depth: 2, slug: 'distribution', text: 'Distribution' },
   { depth: 2, slug: 'tools', text: 'Tools' },
-  { depth: 2, slug: 'copyright', text: 'Copyright' },
-  { depth: 2, slug: 'theme', text: 'Theme' }
-]
-
-const distributions = [
-  {
-    title: '镜像站 1',
-    url: 'example.com',
-    platform: 'Vercel'
-  },
-  {
-    title: '镜像站 2',
-    url: 'blog.example.com',
-    platform: 'Vultr'
-  }
+  { depth: 2, slug: 'theme', text: 'Theme' },
+  { depth: 2, slug: 'copyright', text: 'Copyright' }
 ]
 ---
 
 <PageLayout title='About' {headings} info='/about'>
-  <p>空栈工程师 / <Spoiler>关于你的一些冷知识</Spoiler></p>
+  <p>空栈工程师 / <Spoiler>关于我的一些冷知识</Spoiler></p>
   <p>
-    我是空白无上，一个喜欢写代码、做系统，也喜欢把想法慢慢整理成文字的人。这个网站记录的，不只是完成的结果，也包括仍在继续的学习、思考与构建。这里有文章，有笔记，有项目，也有我正在慢慢形成的技术观和方法论。
+    我是空白无上，一个喜欢写代码、做系统，也喜欢把想法慢慢整理成文字的人。这个网站记录的不只是完成的结果，还有仍在继续的学习、思考与构建：这里有文章、笔记和项目，也有我正在逐渐成形的技术观与方法论。
   </p>
   <h2 id='tools'>工具<a class='anchor' href='#tools'>#</a></h2>
   <ToolSection
@@ -62,17 +48,23 @@ const distributions = [
       }
     ]}
   />
+  <h2 id='theme'>主题<a class='anchor' href='#theme'>#</a></h2>
+  <p>
+    本站基于 Astro 的 <a href='https://github.com/Axi404/Axi-Theme'>Axi-Theme</a> 主题魔改而来。文章、笔记、项目等内容不再存放于代码仓库，而是在构建时通过飞书开放平台的
+    API 拉取远程数据源，生成纯静态页面（早期版本曾以
+    Notion 作为数据源，实现参考了 <a href='https://github.com/tangly1024/NotionNext'>NotionNext</a>）。
+  </p>
   <h2 id='copyright'>版权<a class='anchor' href='#copyright'>#</a></h2>
   <p>
-    如你所见，本站中的所有原创内容及设计整体，除非特别说明，均使用 <a
-      href='https://creativecommons.org/licenses/by-nc-sa/4.0/'>CC BY-NC-SA 4.0</a
-    > 协议进行授权。这意味着您可以在协议允许的范围内自由地分享、复制本作品的内容及基于本作品内容进行创作，但必须注明原作者和链接，并且不得用于任何商业目的。
+    除非特别说明，本站的所有原创内容及整体设计均采用
+    <a href='https://creativecommons.org/licenses/by-nc-sa/4.0/'>CC BY-NC-SA 4.0</a>
+    协议授权：你可以在协议允许的范围内自由分享、复制，或基于本站内容进行二次创作，但须注明原作者并附上原文链接，且不得用于商业目的。
   </p>
   <p>
-    本站中的绝大多数博客封面均选自 Pixiv 的公开作品，并已注明原作链接（Hero
-    Image）。包括封面在内，本站中使用了一些来自互联网的图片等素材或商标、标志及相关知识产权，无论是否标注有
-    © 或 ™
-    及其他标识，均归属它们各自的权利持有人所有，并无意侵犯其作品、商标或版权。如果本站中存在侵犯您权益的内容，请您联系我，我将尽快予以删除。
+    本站绝大多数博客封面选自 Pixiv
+    的公开作品，并已在页面中注明原作链接（Hero
+    Image）。除此之外，站内还使用了部分来自互联网的图片、商标等素材，无论是否标有
+    © 或 ™，其权利均归各自的权利持有人所有，本站无意构成任何侵犯。如果你认为本站内容侵犯了你的权益，请联系我，我会尽快删除。
   </p>
   <svg width='160' height='56' viewBox='0 0 160 56' xmlns='http://www.w3.org/2000/svg'>
     <g transform='scale(1.3333333)'>
@@ -154,10 +146,6 @@ const distributions = [
         id='path19'></path>
     </g>
   </svg>
-  <h2 id='theme'>主题<a class='anchor' href='#theme'>#</a></h2>
-  <p>
-    本主题基于 Astro 的 <a href='https://github.com/Axi404/Axi-Theme'>Axi-Theme</a> 主题的基础之上进行了一些魔改，将博客、笔记、项目等内容改为在构建时拉取 Notion API 的远程数据源（这一部分参考了 <a href="https://github.com/tangly1024/NotionNext">NotionNext</a>）。
-  </p>
 
   <AlgorithmShowcase class='my-8' />
 
