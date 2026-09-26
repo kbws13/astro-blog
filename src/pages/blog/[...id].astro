@@ -11,6 +11,8 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
 import PostLayout from '@/layouts/BlogPost.astro'
+import { rehypeShikiHighlight } from '@/plugins/rehype-shiki-highlight'
+import config from '@/site-config'
 import {
   findProjectByArticleSlug,
   getPageContent,
@@ -110,6 +112,7 @@ async function renderContentMarkdown(markdown: string): Promise<{
     })
     .use(remarkRehype)
     .use(rehypeKatex)
+    .use(rehypeShikiHighlight)
     .use(rehypeStringify)
 
   const file = await processor.process(markdown)
@@ -144,7 +147,7 @@ function toRenderedPost(post: ContentPost, description: string): RenderedPost {
       category: post.category,
       language: post.lang,
       draft: false,
-      comment: true,
+      comment: config.integ.waline.enable ?? false,
       heroImage
     }
   }

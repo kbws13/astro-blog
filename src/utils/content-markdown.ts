@@ -9,6 +9,7 @@ import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
+import { rehypeShikiHighlight } from '@/plugins/rehype-shiki-highlight'
 import mdastToString from '@/utils/mdast-util-to-string'
 
 export function slugifyHeading(text: string): string {
@@ -65,6 +66,7 @@ export async function renderContentMarkdown(markdown: string): Promise<{
     })
     .use(remarkRehype)
     .use(rehypeKatex)
+    .use(rehypeShikiHighlight)
     .use(rehypeStringify)
     .process(markdown)
 

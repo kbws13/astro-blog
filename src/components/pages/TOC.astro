@@ -59,43 +59,58 @@ const toc = generateToc(headings)
 
     updatePositionAndStyle = () => {
       const windowHeight = window.innerHeight
-      const contentEl = document.querySelector('#content') as HTMLElement
-      const contentTop = contentEl?.getBoundingClientRect().top + window.scrollY || 0
-      const postOffset = (contentEl?.offsetHeight || 0) + contentTop
+      // 标题顶部越过此偏移（相对视口）时，切换到该章节。互斥：同一时刻只高亮一个章节。
+      const scrollSpyOffset = 120
 
+      // 当前章节 = 最后一个标题顶部位于 scrollSpyOffset 之上的章节
+      let currentIndex = -1
       this.headings.forEach((el, index) => {
-        const elTop = el.getBoundingClientRect().top + window.scrollY
-        const nextHeadingTop = this.headings[index + 1]
-          ? this.headings[index + 1].getBoundingClientRect().top + window.scrollY
-          : postOffset
-        const range = [elTop - window.scrollY, nextHeadingTop - window.scrollY - el.offsetHeight]
-        const progress = (windowHeight - range[0]) / (range[1] - range[0])
-
-        this.headingProgress[el.id] = {
-          inView: range[0] < windowHeight && range[1] > 0,
-          progress: Math.max(0, Math.min(1, progress))
+        if (el.getBoundingClientRect().top <= scrollSpyOffset) {
+          currentIndex = index
         }
       })
 
-      this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
-        const { inView, progress } = this.headingProgress[slug]
-        if (this.headingProgress[slug]) {
-          el.classList.toggle('highlight', inView)
-          el.classList.toggle('highlight-bg-translucent', inView)
-          el.classList.toggle(
-            'rounded-t-2xl',
-            inView && (i == 0 || !this.headingProgress[this.tocLinks[i - 1]?.slug].inView)
-          )
-          el.classList.toggle(
-            'rounded-b-2xl',
-            inView &&
-              (i == this.tocLinks.length - 1 ||
-                !this.headingProgress[this.tocLinks[i + 1]?.slug].inView)
-          )
-          bar.classList.toggle('readed', !inView && progress == 1)
-          bar.classList.toggle('highlight-bg', inView)
-          bar.style.setProperty('height', `${progress * 90}%`)
+      this.headings.forEach((el, index) => {
+        const inView = index === currentIndex
+
+        let progress = 0
+        if (index < currentIndex) {
+          // 已读章节：进度条置满并标记 readed
+          progress = 1
+        } else if (index === currentIndex) {
+          // 当前章节：视口底部扫过该章节内容的进度
+          const elTop = el.getBoundingClientRect().top
+          const nextHeading = this.headings[index + 1]
+          const nextTop = nextHeading
+            ? nextHeading.getBoundingClientRect().top
+            : (document.querySelector('#content')?.getBoundingClientRect().bottom ?? windowHeight)
+          const range = nextTop - el.offsetHeight - elTop
+          progress = range > 0 ? Math.max(0, Math.min(1, (windowHeight - elTop) / range)) : 1
         }
+
+        this.headingProgress[el.id] = { inView, progress }
+      })
+
+      this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
+        const state = this.headingProgress[slug]
+        if (!state) return
+        const { inView, progress } = state
+
+        el.classList.toggle('highlight', inView)
+        el.classList.toggle('highlight-bg-translucent', inView)
+        el.classList.toggle(
+          'rounded-t-2xl',
+          inView && (i === 0 || !this.headingProgress[this.tocLinks[i - 1]?.slug]?.inView)
+        )
+        el.classList.toggle(
+          'rounded-b-2xl',
+          inView &&
+            (i === this.tocLinks.length - 1 ||
+              !this.headingProgress[this.tocLinks[i + 1]?.slug]?.inView)
+        )
+        bar.classList.toggle('readed', !inView && progress === 1)
+        bar.classList.toggle('highlight-bg', inView)
+        bar.style.setProperty('height', `${progress * 90}%`)
       })
     }
 

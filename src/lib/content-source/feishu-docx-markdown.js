@@ -1,7 +1,73 @@
+// 飞书 docx 代码块 style.language 的数字枚举 → shiki 语言 id
+// 参考 https://github.com/larksuite/oapi-sdk-java CodeLanguageEnum
 const CODE_LANGUAGE_BY_ID = {
-  1: '',
-  7: 'sh',
-  30: 'js'
+  1: '', // PlainText
+  2: 'abap',
+  3: 'ada',
+  4: 'apache',
+  5: 'apex',
+  6: 'asm', // AssemblyLanguage
+  7: 'bash',
+  8: 'csharp',
+  9: 'cpp', // C++
+  10: 'c',
+  11: 'cobol',
+  12: 'css',
+  13: 'coffee', // CoffeeScript
+  14: 'd',
+  15: 'dart',
+  16: 'pascal', // Delphi
+  17: 'django',
+  18: 'docker', // Dockerfile
+  19: 'erlang',
+  20: 'fortran',
+  21: 'foxpro',
+  22: 'go',
+  23: 'groovy',
+  24: 'html',
+  25: 'handlebars', // HTMLBars
+  26: 'http',
+  27: 'haskell',
+  28: 'json',
+  29: 'java',
+  30: 'javascript',
+  31: 'julia',
+  32: 'kotlin',
+  33: 'latex',
+  34: 'lisp',
+  35: 'logo',
+  36: 'lua',
+  37: 'matlab',
+  38: 'makefile',
+  39: 'markdown',
+  40: 'nginx',
+  41: 'objective-c', // ObjectiveC
+  42: 'openedge', // OpenEdgeABL
+  43: 'php',
+  44: 'perl',
+  45: 'postscript',
+  46: 'powershell',
+  47: 'prolog',
+  48: 'protobuf',
+  49: 'python',
+  50: 'r',
+  51: 'rpg',
+  52: 'ruby',
+  53: 'rust',
+  54: 'sas',
+  55: 'scss',
+  56: 'sql',
+  57: 'scala',
+  58: 'scheme',
+  59: 'scratch',
+  60: 'shell',
+  61: 'swift',
+  62: 'thrift',
+  63: 'typescript',
+  64: 'vbscript',
+  65: 'vb', // VisualBasic
+  66: 'xml',
+  67: 'yaml'
 }
 
 function renderTextElements(elements = []) {
@@ -27,7 +93,7 @@ function renderPlainTextElements(elements = []) {
 
 function getCodeLanguage(code = {}) {
   const language = code.language ?? code.style?.language
-  if (typeof language === 'string') return language
+  if (typeof language === 'string') return language.toLowerCase()
   return CODE_LANGUAGE_BY_ID[language] ?? ''
 }
 

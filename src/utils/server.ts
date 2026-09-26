@@ -1,5 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content'
 
+import config from '@/site-config'
+
 import {
   getNotes,
   getPosts,
@@ -89,7 +91,7 @@ function toBlogPostEntry(post: ContentPost): BlogPostEntry {
       category: post.category,
       language: post.lang,
       draft: false,
-      comment: true,
+      comment: config.integ.waline.enable ?? false,
       heroImage
     }
   }
