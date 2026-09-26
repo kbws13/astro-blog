@@ -1,6 +1,12 @@
 ---
 import { getPageContent } from '@/lib/content-source'
-import { getBlogCollection, getBlogCollectionEn, sortMDByDate } from '@/utils/server'
+import {
+  getBlogCollection,
+  getBlogCollectionEn,
+  getNotesCollection,
+  getNotesCollectionEn,
+  sortMDByDate
+} from '@/utils/server'
 import { Icon } from '@/components/user'
 import getReadingTime from '@/utils/reading-time'
 
@@ -14,6 +20,7 @@ const startDate = blogStartDate
 const isEnglish = Astro.currentLocale === 'en'
 const allPosts = await (isEnglish ? getBlogCollectionEn() : getBlogCollection())
 const sortedPosts = sortMDByDate(allPosts)
+const allNotes = await (isEnglish ? getNotesCollectionEn() : getNotesCollection())
 
 const today = new Date()
 const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -24,8 +31,8 @@ const lastUpdated = sortedPosts.length > 0 ?
 
 const totalWords = (
   await Promise.all(
-    sortedPosts.map(async (post) => {
-      const markdown = await getPageContent(post.source)
+    [...allPosts, ...allNotes].map(async (item) => {
+      const markdown = await getPageContent(item.source)
       return getReadingTime(markdown).words
     })
   )
@@ -77,7 +84,7 @@ const formatDate = (date: Date) => {
   </div>
   
   <div class="flex items-center justify-between text-sm border-t border-border pt-3">
-    <span class="text-muted-foreground">Total Posts</span>
-    <span class="font-medium text-foreground">{allPosts.length}</span>
+    <span class="text-muted-foreground">Total Articles</span>
+    <span class="font-medium text-foreground">{allPosts.length + allNotes.length}</span>
   </div>
 </div> 
