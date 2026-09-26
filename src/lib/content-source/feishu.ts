@@ -9,6 +9,7 @@ import {
 } from './feishu-field-utils.js'
 import type {
   ContentEntry,
+  ContentLang,
   ContentNoteEntry,
   ContentPageEntry,
   ContentPost,
@@ -158,7 +159,33 @@ async function getTenantAccessToken(): Promise<string> {
   return tokenCache.token
 }
 
-async function feishuRequest<T>(path: string, init: RequestInit = {}): Promise<FeishuApiResponse<T>> {
+class FeishuApiError extends Error {
+  readonly rateLimited: boolean
+
+  constructor(path: string, data: FeishuApiResponse<unknown>) {
+    super(`Feishu API request failed (${path}): ${data.msg || data.code}`)
+    this.rateLimited =
+      data.code === 99991400 || /frequency limit|too many request|rate limit/i.test(data.msg || '')
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+const MAX_REQUEST_ATTEMPTS = 5
+const RETRY_BASE_DELAY_MS = 500
+
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof FeishuApiError) return error.rateLimited
+  // Network-level failures (fetch rejects) are retried as well
+  return true
+}
+
+async function feishuRequestOnce<T>(
+  path: string,
+  init: RequestInit
+): Promise<FeishuApiResponse<T>> {
   const token = await getTenantAccessToken()
   const response = await fetch(`https://open.feishu.cn/open-apis${path}`, {
     ...init,
@@ -171,9 +198,39 @@ async function feishuRequest<T>(path: string, init: RequestInit = {}): Promise<F
 
   const data = await response.json() as FeishuApiResponse<T>
   if (data.code !== 0) {
-    throw new Error(`Feishu API request failed (${path}): ${data.msg || data.code}`)
+    throw new FeishuApiError(path, data)
   }
   return data
+}
+
+async function feishuRequest<T>(path: string, init: RequestInit = {}): Promise<FeishuApiResponse<T>> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await feishuRequestOnce<T>(path, init)
+    } catch (error) {
+      if (attempt >= MAX_REQUEST_ATTEMPTS || !isRetryableError(error)) throw error
+      await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1) + Math.random() * 500)
+    }
+  }
+}
+
+// Feishu throttles parallel docx block requests ("request trigger frequency limit"),
+// so cap the number of in-flight block fetches process-wide.
+const DOCX_REQUEST_CONCURRENCY = 5
+let docxActiveRequests = 0
+const docxWaiters: Array<() => void> = []
+
+async function withDocxSlot<T>(task: () => Promise<T>): Promise<T> {
+  if (docxActiveRequests >= DOCX_REQUEST_CONCURRENCY) {
+    await new Promise<void>((resolve) => docxWaiters.push(resolve))
+  }
+  docxActiveRequests++
+  try {
+    return await task()
+  } finally {
+    docxActiveRequests--
+    docxWaiters.shift()?.()
+  }
 }
 
 function hasRegistryConfig() {
@@ -251,6 +308,52 @@ export async function getProjects(): Promise<ContentProject[]> {
   return getEntriesByType<ContentProject>('Project')
 }
 
+const PROJECT_LINK_ICONS: Record<string, string> = {
+  site: 'earth',
+  github: 'github-circle',
+  doc: 'document',
+  release: 'package'
+}
+const PROJECT_LINK_PRIORITY = ['site', 'github', 'doc', 'release'] as const
+
+export interface ProjectLink {
+  name: string
+  url: string
+  icon: string
+}
+
+export function getProjectLink(project: ContentProject): ProjectLink | undefined {
+  for (const key of PROJECT_LINK_PRIORITY) {
+    const href = project[key]
+    if (typeof href === 'string' && href) {
+      return { name: project.title, url: href, icon: PROJECT_LINK_ICONS[key] }
+    }
+  }
+  return undefined
+}
+
+export async function findProjectByArticleSlug(
+  slug: string,
+  lang: ContentLang
+): Promise<ContentProject | undefined> {
+  const projects = await getProjects()
+  return projects.find((project) => project.slug === slug && project.lang === lang)
+}
+
+export async function getArticleUrls(lang: ContentLang): Promise<Map<string, string>> {
+  const [posts, notes] = await Promise.all([getPosts(), getNotes()])
+  const prefix = lang === 'en' ? '/en' : ''
+  const urls = new Map<string, string>()
+
+  for (const post of posts) {
+    if (post.lang === lang) urls.set(post.slug, `${prefix}/blog/${post.slug}`)
+  }
+  for (const note of notes) {
+    if (note.lang === lang) urls.set(note.slug, `${prefix}/notes/${note.slug}`)
+  }
+  return urls
+}
+
 function extractSourceToken(source: string) {
   if (/\/wiki\//.test(source)) {
     return { token: extractFeishuWikiToken(source), objType: 'wiki' }
@@ -277,24 +380,26 @@ async function resolveSource(source: string) {
 }
 
 async function getDocxBlocks(documentId: string, blockId: string): Promise<FeishuBlock[]> {
-  const blocks: FeishuBlock[] = []
-  let pageToken: string | undefined
+  return withDocxSlot(async () => {
+    const blocks: FeishuBlock[] = []
+    let pageToken: string | undefined
 
-  do {
-    const query = new URLSearchParams({
-      page_size: '500',
-      document_revision_id: '-1'
-    })
-    if (pageToken) query.set('page_token', pageToken)
+    do {
+      const query = new URLSearchParams({
+        page_size: '500',
+        document_revision_id: '-1'
+      })
+      if (pageToken) query.set('page_token', pageToken)
 
-    const data = await feishuRequest<FeishuBlockChildren>(
-      `/docx/v1/documents/${documentId}/blocks/${blockId}/children?${query}`
-    )
-    blocks.push(...(data.data?.items || []))
-    pageToken = data.data?.has_more ? data.data.page_token : undefined
-  } while (pageToken)
+      const data = await feishuRequest<FeishuBlockChildren>(
+        `/docx/v1/documents/${documentId}/blocks/${blockId}/children?${query}`
+      )
+      blocks.push(...(data.data?.items || []))
+      pageToken = data.data?.has_more ? data.data.page_token : undefined
+    } while (pageToken)
 
-  return blocks
+    return blocks
+  })
 }
 
 async function getDocxBlockTree(documentId: string, blockId: string): Promise<FeishuBlock[]> {

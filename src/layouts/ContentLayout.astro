@@ -17,13 +17,17 @@ const { meta, highlightColor, back = '/', ...props } = Astro.props
 <PageLayout {meta} {highlightColor} {...props}>
   <main class='mt-6 items-start gap-x-10 md:flex'>
     {/* Sidebar */}
-    <aside
-      class='animate top-24 min-w-48 basis-60 overflow-y-scroll max-md:hidden md:sticky md:order-2 lg:shrink-0'
-      style='height:calc(100vh - 8rem);'
-      id='sidebar'
-    >
-      <slot name='sidebar' />
-    </aside>
+    {
+      Astro.slots.has('sidebar') && (
+        <aside
+          class='animate top-24 min-w-48 basis-60 overflow-y-scroll max-md:hidden md:sticky md:order-2 lg:shrink-0'
+          style='height:calc(100vh - 8rem);'
+          id='sidebar'
+        >
+          <slot name='sidebar' />
+        </aside>
+      )
+    }
 
     <article class='min-w-0 grow'>
       {/* Content header */}

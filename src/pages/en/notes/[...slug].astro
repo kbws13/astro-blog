@@ -1,7 +1,7 @@
 ---
 import type { MarkdownHeading } from 'astro'
 
-import { getPageContent } from '@/lib/content-source'
+import { findProjectByArticleSlug, getPageContent, getProjectLink } from '@/lib/content-source'
 import NotesView from '@/components/pages/NotesView.astro'
 import {
   buildNoteTree,
@@ -53,6 +53,11 @@ if (currentNode.page) {
 }
 
 const title = currentNode.page?.title || currentNode.title
+
+const project = currentNode.page
+  ? await findProjectByArticleSlug(currentNode.page.path, currentNode.page.lang)
+  : undefined
+const projectLink = project ? getProjectLink(project) : undefined
 ---
 
 <NotesView
@@ -66,4 +71,5 @@ const title = currentNode.page?.title || currentNode.title
   childNodes={currentNode.children}
   {headings}
   {html}
+  {projectLink}
 />

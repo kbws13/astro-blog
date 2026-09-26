@@ -11,7 +11,13 @@ import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
 import PostLayout from '@/layouts/BlogPost.astro'
-import { getPageContent, getPosts, type ContentPost } from '@/lib/content-source'
+import {
+  findProjectByArticleSlug,
+  getPageContent,
+  getPosts,
+  getProjectLink,
+  type ContentPost
+} from '@/lib/content-source'
 import mdastToString from '@/utils/mdast-util-to-string'
 import getReadingTime from '@/utils/reading-time'
 
@@ -165,6 +171,9 @@ const markdown = await getPageContent(post.source)
 const { html, headings, remarkPluginFrontmatter } = await renderContentMarkdown(markdown)
 const description = getDescriptionFromMarkdown(markdown, post.title)
 
+const project = await findProjectByArticleSlug(post.slug, post.lang)
+const projectLink = project ? getProjectLink(project) : undefined
+
 const renderedPost = toRenderedPost(post, description)
 const renderedPosts = posts.map((item) =>
   item.slug === post.slug ? renderedPost : toRenderedPost(item, item.title)
@@ -176,6 +185,7 @@ const renderedPosts = posts.map((item) =>
   posts={renderedPosts as any}
   {headings}
   {remarkPluginFrontmatter}
+  {projectLink}
 >
   <Fragment set:html={html} />
 </PostLayout>

@@ -3,7 +3,9 @@ import type { MarkdownHeading } from 'astro'
 
 import { Icon } from '@/components/user'
 import { TOC } from '@/components/pages'
+import ProjectLinkBadge from '@/components/projects/ProjectLinkBadge.astro'
 import ContentLayout from '@/layouts/ContentLayout.astro'
+import type { ProjectLink } from '@/lib/content-source'
 import type { FlatNoteTreeNode, NoteTreeNode } from '@/utils/server'
 
 interface BreadcrumbItem {
@@ -32,6 +34,7 @@ interface Props {
   childSectionTitle?: string
   headings?: MarkdownHeading[]
   html?: string
+  projectLink?: ProjectLink
 }
 
 const {
@@ -48,7 +51,8 @@ const {
   indexMode = false,
   childSectionTitle = 'Subnotes',
   headings = [],
-  html
+  html,
+  projectLink
 } = Astro.props
 
 function getNodeHref(path: string) {
@@ -61,53 +65,59 @@ function countDescendants(node: NoteTreeNode): number {
 ---
 
 <ContentLayout meta={{ title, description }} back={basePath}>
-  <Fragment slot='sidebar'>
-    <div class='space-y-8'>
-      <section>
-        <h2 class='text-xs font-semibold tracking-[0.22em] text-muted-foreground'>{rootTitle}</h2>
-        {
-          flatTree.length > 0 ? (
-            <ul class='mt-4 flex flex-col gap-1 text-sm'>
-              {flatTree.map((node) => {
-                const isActive = node.path === currentPath
+  {
+    (indexMode || !!headings.length) && (
+      <Fragment slot='sidebar'>
+        <div class='space-y-8'>
+          {indexMode && (
+            <section>
+              <h2 class='text-xs font-semibold tracking-[0.22em] text-muted-foreground'>
+                {rootTitle}
+              </h2>
+              {flatTree.length > 0 ? (
+                <ul class='mt-4 flex flex-col gap-1 text-sm'>
+                  {flatTree.map((node) => {
+                    const isActive = node.path === currentPath
 
-                return (
-                  <li style={`padding-left:${Math.max(node.depth - 1, 0) * 0.9}rem`}>
-                    <a
-                      href={getNodeHref(node.path)}
-                      class:list={[
-                        'flex items-center gap-2 rounded-lg px-3 py-2 transition-colors',
-                        isActive
-                          ? 'bg-muted text-foreground'
-                          : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
-                      ]}
-                    >
-                      <span
-                        class:list={[
-                          'inline-block size-1.5 rounded-full',
-                          isActive ? 'bg-primary' : 'bg-border'
-                        ]}
-                      />
-                      <span class='min-w-0 truncate'>{node.title}</span>
-                      {node.hasChildren && (
-                        <span class='ms-auto text-[10px] uppercase tracking-[0.18em] text-muted-foreground'>
-                          Dir
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p class='mt-4 text-sm text-muted-foreground'>No notes yet.</p>
-          )
-        }
-      </section>
+                    return (
+                      <li style={`padding-left:${Math.max(node.depth - 1, 0) * 0.9}rem`}>
+                        <a
+                          href={getNodeHref(node.path)}
+                          class:list={[
+                            'flex items-center gap-2 rounded-lg px-3 py-2 transition-colors',
+                            isActive
+                              ? 'bg-muted text-foreground'
+                              : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+                          ]}
+                        >
+                          <span
+                            class:list={[
+                              'inline-block size-1.5 rounded-full',
+                              isActive ? 'bg-primary' : 'bg-border'
+                            ]}
+                          />
+                          <span class='min-w-0 truncate'>{node.title}</span>
+                          {node.hasChildren && (
+                            <span class='ms-auto text-[10px] uppercase tracking-[0.18em] text-muted-foreground'>
+                              Dir
+                            </span>
+                          )}
+                        </a>
+                      </li>
+                    )
+                  })}
+                </ul>
+              ) : (
+                <p class='mt-4 text-sm text-muted-foreground'>No notes yet.</p>
+              )}
+            </section>
+          )}
 
-      {!!headings.length && <TOC {headings} />}
-    </div>
-  </Fragment>
+          {!!headings.length && <TOC {headings} />}
+        </div>
+      </Fragment>
+    )
+  }
 
   <Fragment slot='header'>
     <div class='flex flex-wrap items-center gap-2 text-sm text-muted-foreground'>
@@ -125,6 +135,7 @@ function countDescendants(node: NoteTreeNode): number {
       ))}
     </div>
     <h1 class='mt-4 text-2xl font-medium sm:text-3xl'>{title}</h1>
+    {projectLink && <ProjectLinkBadge class='mt-3' project={projectLink} />}
     <p class='mt-3 text-sm text-muted-foreground sm:text-base'>{description}</p>
   </Fragment>
 

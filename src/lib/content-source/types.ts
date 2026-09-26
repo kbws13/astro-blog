@@ -38,6 +38,7 @@ export interface ContentProject {
   title: string
   type: 'Project'
   lang: ContentLang
+  slug?: string
   description?: string
   image?: string
   order?: number

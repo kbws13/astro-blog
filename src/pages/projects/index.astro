@@ -1,5 +1,5 @@
 ---
-import { getProjects } from '@/lib/content-source'
+import { getArticleUrls, getProjectLink, getProjects } from '@/lib/content-source'
 import PageLayout from '@/layouts/CommonPage.astro'
 import ProjectSection from '@/components/projects/ProjectSection.astro'
 import config from '@/site-config'
@@ -8,19 +8,29 @@ const headings = [
   { depth: 2, slug: 'projects', text: 'Projects' }
 ]
 
+const articleUrls = await getArticleUrls('zh')
+
 const projects = (await getProjects())
   .filter((project) => project.lang === 'zh')
   .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  .map((project) => ({
-    name: project.title,
-    description: project.description || '',
-    links: [
-      project.site ? { type: 'site', href: project.site } : null,
-      project.github ? { type: 'github', href: project.github } : null,
-      project.doc ? { type: 'doc', href: project.doc } : null,
-      project.release ? { type: 'release', href: project.release } : null
-    ].filter((link): link is { type: string; href: string } => link !== null)
-  }))
+  .map((project) => {
+    const articleUrl = project.slug ? articleUrls.get(project.slug) : undefined
+    if (project.slug && !articleUrl) {
+      console.warn(`Project "${project.title}" references unknown article slug: ${project.slug}`)
+    }
+
+    return {
+      name: project.title,
+      description: project.description || '',
+      url: articleUrl || getProjectLink(project)?.url,
+      links: [
+        project.site ? { type: 'site', href: project.site } : null,
+        project.github ? { type: 'github', href: project.github } : null,
+        project.doc ? { type: 'doc', href: project.doc } : null,
+        project.release ? { type: 'release', href: project.release } : null
+      ].filter((link): link is { type: string; href: string } => link !== null)
+    }
+  })
 ---
 
 <PageLayout title='Projects' {headings} info={{ slug: '/projects', hideComment: true }}>

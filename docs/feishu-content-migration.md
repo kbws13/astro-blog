@@ -32,6 +32,7 @@ Use one registry table unless there is a proven scale or permission reason to sp
 | `Status` | single select | all | `Published`, `Draft`, `Hidden`, `Archived` |
 | `Lang` | single select | all | `zh`, `en` |
 | `Slug` | text | posts, pages, notes | Route slug. Notes may use nested paths like `topic/item` |
+| `Slug` (projects) | text | projects | Slug of a published post or note on this site. When set, the project card title links to the article (`/blog/{slug}` or `/notes/{slug}`) instead of the external `Site`/`GitHub` link, and the article header shows a project badge linking back to `Site`/`GitHub` |
 | `Source` | url/text | posts, pages, notes | Feishu document or wiki URL/token for body content |
 | `Date` | date | posts | Publish date |
 | `Tags` | multi select | posts | Tag list |

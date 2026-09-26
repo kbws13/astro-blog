@@ -163,6 +163,7 @@ export function normalizeFeishuRecord(record) {
     return {
       ...base,
       type: 'Project',
+      slug: asString(getField(fields, 'Slug'), 'Slug', false),
       description: asString(getField(fields, 'Description'), 'Description', false),
       image: asString(getField(fields, 'Image'), 'Image', false),
       order: asNumber(getField(fields, 'Order')),

@@ -42,6 +42,67 @@ async function renderChildren(block, options) {
   return docxBlocksToMarkdown(block.childrenBlocks, options)
 }
 
+function escapeTableCell(markdown) {
+  return markdown
+    .replace(/\|/g, '\\|')
+    .replace(/\n+/g, '<br>')
+    .trim()
+}
+
+// The docx API may return `cells` either as a row-major 2D matrix or as a flat
+// block-id list sized row_size * column_size; normalize both to a matrix.
+function getCellMatrix(table) {
+  const cells = table?.cells
+  if (!Array.isArray(cells) || !cells.length) return []
+
+  if (Array.isArray(cells[0])) return cells
+
+  const columnSize = Number(table.property?.column_size)
+  if (!Number.isInteger(columnSize) || columnSize < 1) return cells.map((id) => [id])
+
+  const matrix = []
+  for (let index = 0; index < cells.length; index += columnSize) {
+    matrix.push(cells.slice(index, index + columnSize))
+  }
+  return matrix
+}
+
+async function renderTable(block, options) {
+  const cellMatrix = getCellMatrix(block.table)
+  if (!cellMatrix.length) return ''
+
+  const cellBlocksById = new Map()
+  for (const child of block.childrenBlocks || []) {
+    if (child.block_id) cellBlocksById.set(child.block_id, child)
+  }
+
+  const rows = []
+  for (const row of cellMatrix) {
+    const renderedCells = []
+    for (const cellId of row) {
+      const cellBlock = cellBlocksById.get(cellId)
+      const markdown = cellBlock ? await renderChildren(cellBlock, options) : ''
+      renderedCells.push(escapeTableCell(markdown || ''))
+    }
+    if (renderedCells.length) rows.push(renderedCells)
+  }
+  if (!rows.length) return ''
+
+  const columnCount = Math.max(...rows.map((row) => row.length))
+  const normalizedRows = rows.map((row) => {
+    const padded = [...row]
+    while (padded.length < columnCount) padded.push('')
+    return padded
+  })
+
+  const [headerRow, ...bodyRows] = normalizedRows
+  return [
+    `| ${headerRow.join(' | ')} |`,
+    `| ${Array.from({ length: columnCount }, () => '---').join(' | ')} |`,
+    ...bodyRows.map((row) => `| ${row.join(' | ')} |`)
+  ].join('\n')
+}
+
 async function blockToMarkdown(block, options = {}) {
   const type = block.block_type
 
@@ -75,6 +136,10 @@ async function blockToMarkdown(block, options = {}) {
   if (type === 27 && block.image?.token && options.resolveImage) {
     const src = await options.resolveImage(block.image)
     return src ? `![Feishu image](${src})` : ''
+  }
+
+  if (type === 31 && block.table) {
+    return renderTable(block, options)
   }
 
   if (type === 34) {

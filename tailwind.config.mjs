@@ -52,7 +52,36 @@ const typographyConfig = ({ theme }) => ({
         margin: '0 auto'
       },
       table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        margin: '1.75rem 0',
+        fontSize: '0.9em',
+        lineHeight: '1.65',
         overflowX: 'scroll'
+      },
+      thead: {
+        backgroundColor: 'hsl(var(--muted) / 0.5)'
+      },
+      'thead th': {
+        padding: '0.6rem 0.9rem',
+        fontWeight: '600',
+        color: fg,
+        whiteSpace: 'nowrap',
+        borderBottom: '2px solid hsl(var(--border))'
+      },
+      'tbody td': {
+        padding: '0.6rem 0.9rem',
+        verticalAlign: 'top',
+        borderBottom: '1px solid hsl(var(--border) / 0.7)'
+      },
+      // The typography plugin's default `tbody tr:last-child` rule removes the
+      // row border; borders live on td so the final row stays separated from
+      // the content below.
+      'tbody tr:last-child td': {
+        borderBottom: '1px solid hsl(var(--border) / 0.7)'
+      },
+      'tbody tr:hover': {
+        backgroundColor: 'hsl(var(--muted) / 0.35)'
       },
       blockquote: {
         position: 'relative',

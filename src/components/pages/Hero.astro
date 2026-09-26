@@ -4,10 +4,13 @@ import type { InferEntrySchema } from 'astro:content'
 
 import { PageInfo } from '.'
 import { FormattedDate, Icon } from '@/components/user'
+import ProjectLinkBadge from '@/components/projects/ProjectLinkBadge.astro'
+import type { ProjectLink } from '@/lib/content-source'
 
 interface Props {
   data: InferEntrySchema<'blog'> | InferEntrySchema<'blogEn'>
   remarkPluginFrontmatter: Record<string, unknown>
+  projectLink?: ProjectLink
 }
 
 const {
@@ -23,7 +26,8 @@ const {
     language,
     pixivLink
   },
-  remarkPluginFrontmatter
+  remarkPluginFrontmatter,
+  projectLink
 } = Astro.props
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
@@ -139,6 +143,8 @@ const imageAlt: string = (heroImage?.alt || title) as string
   <h1 class='mt-4 text-2xl font-medium sm:mb-2 sm:mt-6 sm:text-3xl'>
     {title}
   </h1>
+
+  {projectLink && <ProjectLinkBadge class='mt-3' project={projectLink} />}
 
   <div class='mt-3 italic'>
     <blockquote class='text-sm text-muted-foreground'><q>{description}</q></blockquote>

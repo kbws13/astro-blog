@@ -1,0 +1,31 @@
+---
+import { Icon } from '@/components/user'
+import { Icons } from '@/libs/icons'
+import type { ProjectLink } from '@/lib/content-source'
+
+interface Props {
+  class?: string
+  project: ProjectLink
+}
+
+const { class: className, project } = Astro.props
+const icon = project.icon as keyof typeof Icons
+---
+
+<a
+  href={project.url}
+  target='_blank'
+  rel='noopener noreferrer'
+  class:list={[
+    className,
+    'group/project-link inline-flex w-fit items-center gap-1.5 rounded-full border border-border/50 bg-card/50 px-3 py-1 text-xs font-medium text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-md hover:shadow-primary/20'
+  ]}
+  aria-label={`Visit the project ${project.name}`}
+>
+  <Icon class='size-3.5' name={icon} />
+  <span>{project.name}</span>
+  <Icon
+    class='size-3 -rotate-45 transition-transform duration-300 group-hover/project-link:scale-125'
+    name='up'
+  />
+</a>

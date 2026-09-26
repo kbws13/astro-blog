@@ -9,6 +9,7 @@ import { Comment, MediumZoom } from '@/components/advanced'
 import { ArticleBottom, Copyright, Hero, TOC } from '@/components/pages'
 import PageLayout from '@/layouts/ContentLayout.astro'
 import { integ } from '@/site-config'
+import type { ProjectLink } from '@/lib/content-source'
 import type { BlogPostEntry } from '@/utils/server'
 
 interface Props {
@@ -16,13 +17,15 @@ interface Props {
   posts: CollectionEntry<'blog'>[] | CollectionEntry<'blogEn'>[] | BlogPostEntry[]
   headings: MarkdownHeading[]
   remarkPluginFrontmatter: Record<string, unknown>
+  projectLink?: ProjectLink
 }
 
 const {
   post: { id, data },
   posts,
   headings,
-  remarkPluginFrontmatter
+  remarkPluginFrontmatter,
+  projectLink
 } = Astro.props
 
 const {
@@ -51,7 +54,7 @@ const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--tw-tex
 >
   {!!headings.length && <TOC {headings} slot='sidebar' />}
 
-  <Hero {data} {remarkPluginFrontmatter} slot='header' />
+  <Hero {data} {remarkPluginFrontmatter} {projectLink} slot='header' />
 
   <slot />
 
