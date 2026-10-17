@@ -71,6 +71,7 @@ interface FeishuBlock {
   ordered?: { elements?: FeishuTextElement[] }
   code?: { elements?: FeishuTextElement[]; language?: string; style?: { language?: number } }
   quote?: { elements?: FeishuTextElement[] }
+  sheet?: { token?: string }
   image?: {
     token?: string
     width?: number
@@ -475,9 +476,24 @@ async function resolveFeishuImage(image: { token?: string }): Promise<string> {
   return request
 }
 
+async function resolveFeishuSheet(sheet: { token?: string }): Promise<unknown[][]> {
+  const [spreadsheetToken, sheetId] = (sheet.token || '').split('_')
+  if (!spreadsheetToken || !sheetId) {
+    throw new Error(`Invalid embedded Feishu sheet token: ${sheet.token}`)
+  }
+
+  const response = await feishuRequest<{ valueRange?: { values?: unknown[][] } }>(
+    `/sheets/v2/spreadsheets/${spreadsheetToken}/values/${sheetId}?valueRenderOption=ToString&dateTimeRenderOption=FormattedString`
+  )
+  return response.data?.valueRange?.values || []
+}
+
 async function getDocxMarkdown(documentId: string): Promise<string> {
   const blocks = await getDocxBlockTree(documentId, documentId)
-  return await docxBlocksToMarkdown(blocks, { resolveImage: resolveFeishuImage })
+  return await docxBlocksToMarkdown(blocks, {
+    resolveImage: resolveFeishuImage,
+    resolveSheet: resolveFeishuSheet
+  })
 }
 
 export async function getPageContent(source: string): Promise<string> {

@@ -73,6 +73,7 @@ Use official Feishu Open Platform APIs.
 - Bitable record search: `POST https://open.feishu.cn/open-apis/bitable/v1/apps/:app_token/tables/:table_id/records/search`
 - Wiki child nodes: `GET https://open.feishu.cn/open-apis/wiki/v2/spaces/:space_id/nodes`
 - Docx block children: `GET https://open.feishu.cn/open-apis/docx/v1/documents/:document_id/blocks/:block_id/children`
+- Embedded sheet values: `GET https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/:spreadsheet_token/values/:sheet_id`
 - Document image download: `GET https://open.feishu.cn/open-apis/drive/v1/medias/:file_token/download`
 
 The Feishu docs note that API permissions are not enough by themselves. The Feishu app also needs access to the concrete Bitable, Wiki, and Docs resources.
@@ -268,6 +269,7 @@ Note category note from 2026-07-04:
 - Feishu Docx code blocks observed in the test wiki are `block_type: 14` with a `code` payload. The converter renders them as fenced Markdown and uses plain text inside code blocks so Feishu inline styles do not corrupt code.
 - Feishu Docx images observed in the test wiki are `block_type: 27` with an image media token. The build-time content source downloads those images with tenant access token and emits Markdown image references to `/feishu-assets/...`.
 - Feishu quote containers observed as `block_type: 34` are read recursively and rendered as Markdown blockquotes.
+- Feishu embedded spreadsheets use `block_type: 30` with `sheet.token` in the form `spreadsheet_token_sheet_id`; these are distinct from native Docx tables (`block_type: 31`). The content source reads the entire sheet's formatted values through the Sheets API and renders a Markdown table with the first row as the header. Cell text is escaped as literal text and line breaks become spaces. The app needs Sheets read permission and access to the embedded spreadsheet; API errors fail the build instead of silently dropping the table.
 - Blocks with children are traversed recursively, so nested content is not silently dropped at the root-block boundary.
 
 ## Documentation Rule

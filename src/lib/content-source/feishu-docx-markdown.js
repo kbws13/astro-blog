@@ -152,6 +152,10 @@ async function renderTable(block, options) {
     }
     if (renderedCells.length) rows.push(renderedCells)
   }
+  return renderTableRows(rows)
+}
+
+function renderTableRows(rows) {
   if (!rows.length) return ''
 
   const columnCount = Math.max(...rows.map((row) => row.length))
@@ -167,6 +171,16 @@ async function renderTable(block, options) {
     `| ${Array.from({ length: columnCount }, () => '---').join(' | ')} |`,
     ...bodyRows.map((row) => `| ${row.join(' | ')} |`)
   ].join('\n')
+}
+
+async function renderSheet(block, options) {
+  const values = await options.resolveSheet(block.sheet)
+  const rows = values.map((row) => row.map((value) => escapeTableCell(
+    String(value ?? '')
+      .replace(/([\\`*_{}\[\]<>~$])/g, '\\$1')
+      .replace(/\r?\n/g, ' ')
+  )))
+  return renderTableRows(rows)
 }
 
 async function blockToMarkdown(block, options = {}) {
@@ -202,6 +216,10 @@ async function blockToMarkdown(block, options = {}) {
   if (type === 27 && block.image?.token && options.resolveImage) {
     const src = await options.resolveImage(block.image)
     return src ? `![Feishu image](${src})` : ''
+  }
+
+  if (type === 30 && block.sheet?.token && options.resolveSheet) {
+    return renderSheet(block, options)
   }
 
   if (type === 31 && block.table) {

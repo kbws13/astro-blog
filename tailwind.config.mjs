@@ -12,9 +12,18 @@ const typographyConfig = ({ theme }) => ({
       '--tw-prose-body': fgMuted,
       '--tw-prose-links': fg,
       '--tw-prose-quotes': fgMuted,
-      '--tw-prose-code:': fg,
+      '--tw-prose-code': fg,
       '--tw-prose-pre-code': fgMuted,
       '--tw-prose-pre-bg': bgMuted,
+
+      'code:not(pre code)': {
+        backgroundColor: bgMuted,
+        borderRadius: '0.25rem',
+        padding: '0.125em 0.3em',
+        '&::before, &::after': {
+          content: 'none'
+        }
+      },
 
       'p a, li a, blockquote a, td a': {
         color: fg,
